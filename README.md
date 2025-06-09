@@ -41,7 +41,7 @@ tftldr -input path/to/your/plan.json
 To test locally while developing:
 
 ```bash
-go run ./cmd/tftldr
+go run .
 ```
 
 ## Why tftldr? 🤔
