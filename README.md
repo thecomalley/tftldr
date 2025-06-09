@@ -4,7 +4,7 @@
 
 ## What is this sorcery? ✨
 
-**tftldr** (pronounced "tift-lid-der" or "Terraform Too Long; Didn't Read" if you're not into the whole brevity thing) is your new best friend for making sense of those ridiculously verbose Terraform plan JSON files.
+**tftldr** is your new best friend for making sense of those ridiculously verbose Terraform plan JSON files.
 
 Ever stared at a Terraform plan that's longer than a fantasy novel? Ever wished you could just get the CliffsNotes version? Say no more! **tftldr** transforms that wall of JSON into a beautiful, color-coded table that even your project manager could understand.
 
