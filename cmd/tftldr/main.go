@@ -87,12 +87,12 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 }
 
 func getResourceName(attributes map[string]interface{}) string {
-	// Try to get name or display_name, default to Unknown
-	if name, ok := attributes["name"]; ok && name != nil {
-		return fmt.Sprintf("%v", name)
-	}
+	// Try to get display_name or name, default to Unknown
 	if displayName, ok := attributes["display_name"]; ok && displayName != nil {
 		return fmt.Sprintf("%v", displayName)
+	}
+	if name, ok := attributes["name"]; ok && name != nil {
+		return fmt.Sprintf("%v", name)
 	}
 	return "Unknown"
 }
@@ -123,58 +123,68 @@ func diffParams(before, after map[string]interface{}) []string {
 	return changedParams
 }
 
+// Function to center a string in a specific width
+func centerString(s string, width int) string {
+	if len(s) >= width {
+		return s
+	}
+
+	leftPadding := (width - len(s)) / 2
+	rightPadding := width - len(s) - leftPadding
+
+	return strings.Repeat(" ", leftPadding) + s + strings.Repeat(" ", rightPadding)
+}
+
 func displayTable(changes []ChangeRecord) {
-	// Group changes by type
-	changesByType := map[string][]ChangeRecord{
-		"create": {},
-		"update": {},
-		"delete": {},
+	// Define color settings for each change type
+	changeTypeColors := map[string]tablewriter.Colors{
+		"create": tablewriter.Colors{tablewriter.FgGreenColor},
+		"update": tablewriter.Colors{tablewriter.FgYellowColor},
+		"delete": tablewriter.Colors{tablewriter.FgRedColor},
 	}
 
+	// Create a single table for all changes
+	table := tablewriter.NewWriter(os.Stdout)
+
+	// Create header with column names including Change Type
+	table.SetHeader([]string{"Type", "Name", "Changed Parameters", "Resource Address"})
+
+	// Set appearance options
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("|")
+	table.SetColumnSeparator("|")
+	table.SetRowSeparator("-")
+	table.SetHeaderLine(true)
+	table.SetBorder(true)
+	table.SetTablePadding("\t")
+
+	// Add rows for all changes
 	for _, change := range changes {
-		if _, ok := changesByType[change.ChangeType]; ok {
-			changesByType[change.ChangeType] = append(changesByType[change.ChangeType], change)
-		}
-	}
+		// Apply color to the change type column based on the change type
+		typeColor := changeTypeColors[change.ChangeType]
 
-	// Define table appearance settings for each change type
-	tableSettings := map[string]struct {
-		title string
-		color tablewriter.Colors
-	}{
-		"create": {"CREATE", tablewriter.Colors{tablewriter.FgGreenColor}},
-		"update": {"UPDATE", tablewriter.Colors{tablewriter.FgYellowColor}},
-		"delete": {"DELETE", tablewriter.Colors{tablewriter.FgRedColor}},
-	}
+		// Format change type as uppercase for better visibility
+		changeTypeStr := strings.ToUpper(change.ChangeType)
 
-	// Display tables for each change type
-	for changeType, records := range changesByType {
-		if len(records) == 0 {
-			continue
-		}
-
-		settings := tableSettings[changeType]
-
-		table := tablewriter.NewWriter(os.Stdout)
-
-		// Create a multi-row header with the change type as the title
-		table.SetHeader([]string{"Name", "Address", "Changed Parameters"})
-
-		// Set appearance options
-		table.SetColumnColor(
-			settings.color,
+		// Color settings for this row
+		colors := []tablewriter.Colors{
+			typeColor,
 			tablewriter.Colors{},
 			tablewriter.Colors{},
-		)
-
-		for _, change := range records {
-			table.Append([]string{
-				change.ResourceName,
-				change.ResourceAddress,
-				change.ChangedParams,
-			})
+			tablewriter.Colors{},
 		}
 
-		table.Render()
+		// Add row with rich text formatting
+		table.Rich([]string{
+			changeTypeStr,
+			change.ResourceName,
+			change.ChangedParams,
+			change.ResourceAddress,
+		}, colors)
 	}
+
+	table.Render()
 }
