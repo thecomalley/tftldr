@@ -8,6 +8,8 @@
 
 Ever stared at a Terraform plan that's longer than a fantasy novel? Ever wished you could just get the CliffsNotes version? Say no more! **tftldr** transforms that wall of JSON into a beautiful, color-coded table that even your project manager could understand.
 
+![alt text](docs/image.png)
+
 ## Features 🚀
 
 - Turns intimidating JSON blobs into friendly tables
@@ -18,11 +20,24 @@ Ever stared at a Terraform plan that's longer than a fantasy novel? Ever wished 
 
 ## Installation 📦
 
+```
+While the repo is private you need to use
+export GOPRIVATE=github.com/thecomalley/tftldr
+```
+
+
 ```bash
 go install github.com/thecomalley/tftldr@latest
 ```
 
 ## Usage 🛠️
+
+Generate a Terraform plan JSON file using:
+
+```bash
+terraform plan -out=tfplan.out
+terraform show -json tfplan.out > tfplan.json
+```
 
 Run against your default `tfplan.json` file:
 
