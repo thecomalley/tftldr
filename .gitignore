@@ -3,7 +3,3 @@ tfplan.json
 
 # Ignore the compilled binary
 tftldr
-
-# Allow the cmd/tftldr path
-!cmd/tftldr/
-

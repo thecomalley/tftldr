@@ -10,12 +10,17 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/viper"
 )
 
 func main() {
 	// Define command line flags
 	inputFile := flag.String("input", "tfplan.json", "Path to the Terraform plan JSON file")
+	configFile := flag.String("config", "", "Path to the configuration file (optional)")
 	flag.Parse()
+
+	// Load configuration
+	loadConfig(*configFile)
 
 	// Load the Terraform plan JSON file
 	data, err := os.ReadFile(*inputFile)
@@ -46,6 +51,11 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 	var changes []ChangeRecord
 
 	for _, resource := range resources {
+		// Skip ignored resource types
+		if shouldIgnoreResource(resource.Type) {
+			continue
+		}
+
 		for _, action := range resource.Change.Actions {
 			// Skip no-op and read changes
 			if action == "no-op" || action == "read" {
@@ -86,6 +96,33 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 	return changes
 }
 
+// loadConfig moved to config.go
+
+// shouldIgnoreResource determines if a resource type should be excluded from the output
+func shouldIgnoreResource(resourceType string) bool {
+	// Get ignored resource type prefixes from config
+	ignoredPrefixes := viper.GetStringSlice("ignore.prefixes")
+
+	// Get ignored exact resource types from config
+	ignoredTypes := viper.GetStringSlice("ignore.types")
+
+	// Check if it's an exact match with ignored types
+	for _, t := range ignoredTypes {
+		if resourceType == t {
+			return true
+		}
+	}
+
+	// Check if it starts with any of the ignored prefixes
+	for _, prefix := range ignoredPrefixes {
+		if strings.HasPrefix(resourceType, prefix) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func getResourceName(attributes map[string]interface{}) string {
 	// Try to get display_name or name, default to Unknown
 	if displayName, ok := attributes["display_name"]; ok && displayName != nil {
@@ -121,18 +158,6 @@ func diffParams(before, after map[string]interface{}) []string {
 	}
 
 	return changedParams
-}
-
-// Function to center a string in a specific width
-func centerString(s string, width int) string {
-	if len(s) >= width {
-		return s
-	}
-
-	leftPadding := (width - len(s)) / 2
-	rightPadding := width - len(s) - leftPadding
-
-	return strings.Repeat(" ", leftPadding) + s + strings.Repeat(" ", rightPadding)
 }
 
 func displayTable(changes []ChangeRecord) {

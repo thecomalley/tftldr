@@ -1,0 +1,12 @@
+# Default configuration for tftldr
+
+ignore:
+  # Resource type prefixes to ignore
+  prefixes:
+    - "random_"
+    - "time_"
+
+  # Exact resource types to ignore
+  types:
+    - "terraform_data"
+    - "null_resource"
