@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -17,6 +18,7 @@ func main() {
 	// Define command line flags
 	inputFile := flag.String("input", "tfplan.json", "Path to the Terraform plan JSON file")
 	configFile := flag.String("config", "", "Path to the configuration file (optional)")
+	csvOutput := flag.String("csv", "", "Path to export CSV (optional, for ITIL change tickets)")
 	flag.Parse()
 
 	// Load configuration
@@ -45,6 +47,15 @@ func main() {
 
 	// Display the table
 	displayTable(changes)
+
+	// Export to CSV if requested
+	if *csvOutput != "" {
+		if err := exportToCSV(changes, *csvOutput); err != nil {
+			fmt.Printf("Error exporting to CSV: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Exported changes to CSV: %s\n", *csvOutput)
+	}
 }
 
 func processChanges(resources []ResourceChange) []ChangeRecord {
@@ -212,4 +223,41 @@ func displayTable(changes []ChangeRecord) {
 	}
 
 	table.Render()
+}
+
+// exportToCSV writes the changes to a CSV file for ITIL change tickets
+func exportToCSV(changes []ChangeRecord, outputPath string) error {
+	// Create or truncate the output file
+	file, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed to create CSV file: %w", err)
+	}
+	defer file.Close()
+
+	// Create CSV writer
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// Write header row
+	header := []string{"Change Type", "Resource Name", "Changed Parameters", "Resource Type", "Terraform Resource Address"}
+	if err := writer.Write(header); err != nil {
+		return fmt.Errorf("failed to write CSV header: %w", err)
+	}
+
+	// Write change records
+	for _, change := range changes {
+		record := []string{
+			strings.ToUpper(change.ChangeType),
+			change.ResourceName,
+			change.ChangedParams,
+			change.ResourceType,
+			change.ResourceAddress,
+		}
+
+		if err := writer.Write(record); err != nil {
+			return fmt.Errorf("failed to write CSV record: %w", err)
+		}
+	}
+
+	return nil
 }

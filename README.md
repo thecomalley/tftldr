@@ -16,6 +16,7 @@ Ever stared at a Terraform plan that's longer than a fantasy novel? Ever wished 
 - Color codes changes (green for creations, yellow for updates, red for deletions)
 - Summarizes what's actually changing without the fluff
 - Filters out noise from utility resources like random providers and null resources
+- Export to CSV for ITIL change tickets and documentation
 
 ## Installation 📦
 
@@ -48,6 +49,18 @@ Or specify a different plan file:
 
 ```bash
 tftldr -input path/to/your/plan.json
+```
+
+Export to CSV for ITIL change tickets:
+
+```bash
+tftldr -csv changes.csv
+```
+
+You can combine multiple flags:
+
+```bash
+tftldr -input plan.json -config custom-config.yml -csv changes.csv
 ```
 
 ## Configuration 🔧
