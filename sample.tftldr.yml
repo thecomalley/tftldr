@@ -1,0 +1,20 @@
+# Sample tftldr configuration file (.tftldr.yml)
+
+# Resource types to ignore
+ignore:
+  # Ignore resources with these prefixes
+  prefixes:
+    - random_
+    - time_
+  # Ignore these exact resource types
+  types:
+    - terraform_data
+    - null_resource
+
+# Column visibility settings
+columns:
+  changeType: true # Show the change type (create, update, delete)
+  resourceName: true # Show the resource name
+  changedParams: true # Show parameters that have changed
+  resourceType: true # Show the resource type
+  resourceAddress: false # Show the Terraform resource address

@@ -10,3 +10,7 @@ ignore:
   types:
     - "terraform_data"
     - "null_resource"
+
+# Column visibility settings
+columns:
+  resourceAddress: false # Show the Terraform resource address

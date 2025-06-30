@@ -96,6 +96,26 @@ ignore:
     - "terraform_data"
     - "null_resource"
     - "azurerm_key_vault_secret"
+
+# Column visibility settings
+columns:
+  changeType: true      # Show the change type (create, update, delete)
+  resourceName: true    # Show the resource name
+  changedParams: true   # Show parameters that have changed
+  resourceType: true    # Show the resource type
+  resourceAddress: true # Show the Terraform resource address
+```
+
+You can selectively hide columns by setting them to `false` in your configuration file:
+
+```yaml
+# Only show the most essential information
+columns:
+  changeType: true
+  resourceName: true
+  changedParams: true
+  resourceType: false
+  resourceAddress: false
 ```
 
 You can also specify a custom config file location:

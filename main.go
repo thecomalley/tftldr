@@ -107,8 +107,6 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 	return changes
 }
 
-// loadConfig moved to config.go
-
 // shouldIgnoreResource determines if a resource type should be excluded from the output
 func shouldIgnoreResource(resourceType string) bool {
 	// Get ignored resource type prefixes from config
@@ -182,8 +180,41 @@ func displayTable(changes []ChangeRecord) {
 	// Create a single table for all changes
 	table := tablewriter.NewWriter(os.Stdout)
 
-	// Create header with column names including Change Type
-	table.SetHeader([]string{"Type", "Name", "Changed Parameters", "Resource Address"})
+	// Get column visibility settings from config
+	showChangeType := viper.GetBool("columns.changeType")
+	showResourceName := viper.GetBool("columns.resourceName")
+	showChangedParams := viper.GetBool("columns.changedParams")
+	showResourceType := viper.GetBool("columns.resourceType")
+	showResourceAddress := viper.GetBool("columns.resourceAddress")
+
+	// Build headers and column indices based on visibility settings
+	var headers []string
+	var columnIndices []int
+
+	// Add columns in order based on visibility settings
+	if showChangeType {
+		headers = append(headers, "Type")
+		columnIndices = append(columnIndices, 0)
+	}
+	if showResourceName {
+		headers = append(headers, "Name")
+		columnIndices = append(columnIndices, 1)
+	}
+	if showChangedParams {
+		headers = append(headers, "Changed Parameters")
+		columnIndices = append(columnIndices, 2)
+	}
+	if showResourceType {
+		headers = append(headers, "Resource Type")
+		columnIndices = append(columnIndices, 3)
+	}
+	if showResourceAddress {
+		headers = append(headers, "Resource Address")
+		columnIndices = append(columnIndices, 4)
+	}
+
+	// Create header with selected column names
+	table.SetHeader(headers)
 
 	// Set appearance options
 	table.SetAutoWrapText(false)
@@ -199,27 +230,34 @@ func displayTable(changes []ChangeRecord) {
 
 	// Add rows for all changes
 	for _, change := range changes {
-		// Apply color to the change type column based on the change type
-		typeColor := changeTypeColors[change.ChangeType]
-
 		// Format change type as uppercase for better visibility
 		changeTypeStr := strings.ToUpper(change.ChangeType)
 
-		// Color settings for this row
-		colors := []tablewriter.Colors{
-			typeColor,
-			tablewriter.Colors{},
-			tablewriter.Colors{},
-			tablewriter.Colors{},
-		}
-
-		// Add row with rich text formatting
-		table.Rich([]string{
+		// Prepare all possible values
+		allValues := []string{
 			changeTypeStr,
 			change.ResourceName,
 			change.ChangedParams,
+			change.ResourceType,
 			change.ResourceAddress,
-		}, colors)
+		}
+
+		// Select only the visible columns
+		var rowValues []string
+		for _, idx := range columnIndices {
+			rowValues = append(rowValues, allValues[idx])
+		}
+
+		// Color settings for this row
+		colors := make([]tablewriter.Colors, len(headers))
+
+		// Apply color to the change type column if it's visible
+		if showChangeType {
+			colors[0] = changeTypeColors[change.ChangeType]
+		}
+
+		// Add row with rich text formatting
+		table.Rich(rowValues, colors)
 	}
 
 	table.Render()
@@ -238,20 +276,59 @@ func exportToCSV(changes []ChangeRecord, outputPath string) error {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
+	// Get column visibility settings from config
+	showChangeType := viper.GetBool("columns.changeType")
+	showResourceName := viper.GetBool("columns.resourceName")
+	showChangedParams := viper.GetBool("columns.changedParams")
+	showResourceType := viper.GetBool("columns.resourceType")
+	showResourceAddress := viper.GetBool("columns.resourceAddress")
+
+	// Build headers and column indices based on visibility settings
+	var headers []string
+	var columnIndices []int
+
+	// Add columns in order based on visibility settings
+	if showChangeType {
+		headers = append(headers, "Change Type")
+		columnIndices = append(columnIndices, 0)
+	}
+	if showResourceName {
+		headers = append(headers, "Resource Name")
+		columnIndices = append(columnIndices, 1)
+	}
+	if showChangedParams {
+		headers = append(headers, "Changed Parameters")
+		columnIndices = append(columnIndices, 2)
+	}
+	if showResourceType {
+		headers = append(headers, "Resource Type")
+		columnIndices = append(columnIndices, 3)
+	}
+	if showResourceAddress {
+		headers = append(headers, "Resource Address")
+		columnIndices = append(columnIndices, 4)
+	}
+
 	// Write header row
-	header := []string{"Change Type", "Resource Name", "Changed Parameters", "Resource Type", "Terraform Resource Address"}
-	if err := writer.Write(header); err != nil {
+	if err := writer.Write(headers); err != nil {
 		return fmt.Errorf("failed to write CSV header: %w", err)
 	}
 
 	// Write change records
 	for _, change := range changes {
-		record := []string{
+		// Prepare all possible values
+		allValues := []string{
 			strings.ToUpper(change.ChangeType),
 			change.ResourceName,
 			change.ChangedParams,
 			change.ResourceType,
 			change.ResourceAddress,
+		}
+
+		// Select only the visible columns
+		var record []string
+		for _, idx := range columnIndices {
+			record = append(record, allValues[idx])
 		}
 
 		if err := writer.Write(record); err != nil {
