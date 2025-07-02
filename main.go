@@ -133,12 +133,15 @@ func shouldIgnoreResource(resourceType string) bool {
 }
 
 func getResourceName(attributes map[string]interface{}) string {
-	// Try to get display_name or name, default to Unknown
+	// Try to get display_name, then name, then id, returning first one found
 	if displayName, ok := attributes["display_name"]; ok && displayName != nil {
-		return fmt.Sprintf("%v", displayName)
+		return fmt.Sprint(displayName)
 	}
 	if name, ok := attributes["name"]; ok && name != nil {
-		return fmt.Sprintf("%v", name)
+		return fmt.Sprint(name)
+	}
+	if id, ok := attributes["id"]; ok && id != nil {
+		return fmt.Sprint(id)
 	}
 	return "Unknown"
 }

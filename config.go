@@ -49,9 +49,6 @@ func loadConfig(configPath string) {
 			// Ensure values are set in viper
 			viper.Set("ignore.prefixes", prefixes)
 			viper.Set("ignore.types", types)
-
-			fmt.Printf("Loaded configuration from file: %s\n", configFile)
-			fmt.Printf("Config values - Prefixes: %v, Types: %v\n", prefixes, types)
 		}
 	}
 }

@@ -13,4 +13,4 @@ ignore:
 
 # Column visibility settings
 columns:
-  resourceAddress: false # Show the Terraform resource address
+  resourceAddress: true # Show the Terraform resource address
