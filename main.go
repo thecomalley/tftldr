@@ -14,11 +14,20 @@ import (
 	"github.com/spf13/viper"
 )
 
+var version = "development"
+
 func main() {
 	// Define command line flags
 	inputFile := flag.String("input", "tfplan.json", "Path to the Terraform plan JSON file")
 	csvOutput := flag.String("csv", "", "Path to export CSV (optional, for ITIL change tickets)")
+	flagVersion := flag.Bool("version", false, "Print version")
 	flag.Parse()
+
+	// Print version and exit if requested
+	if *flagVersion {
+		fmt.Printf("tftldr version: %s\n", version)
+		os.Exit(0)
+	}
 
 	// Load configuration
 	loadConfig()

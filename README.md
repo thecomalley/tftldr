@@ -18,13 +18,12 @@ Ever stared at a Terraform plan that's longer than a fantasy novel? Ever wished 
 - Filters out noise from utility resources like random providers and null resources
 - Export to CSV for ITIL change tickets and documentation
 
+## Seriously, why? 🤷‍♂️
+
+Ok seriously though, there are a few terraform plan summary tools out there, but they focus on the terraform resource rather than the actual deployed resource. This is fine for those cattle scenarios, but in my experience theres still a lot of pets out there that need to be cared for. This tool is designed for Day2 operations when change management needs to be appeased before you can run your pipeline.
+
+
 ## Installation 📦
-
-```
-While the repo is private you need to use
-export GOPRIVATE=github.com/thecomalley/tftldr
-```
-
 
 ```bash
 go install github.com/thecomalley/tftldr@latest
@@ -72,15 +71,7 @@ By default, tftldr ignores certain resource types:
 
 ### Configuration Options
 
-You have three ways to provide configuration:
-
-1. **Auto-discovery**: Place a `.tftldr.yml` file in your current directory
-2. **Explicit config**: Provide a config file with the `-config` flag
-3. **Use defaults**: Don't provide any config file to use the built-in defaults
-
-### YAML Configuration Format
-
-Create a `.tftldr.yml` file in your project directory:
+You can create a `.tftldr.yml` file in your project directory to specify which resource types to ignore and which columns to display.
 
 ```yaml
 # .tftldr.yml
@@ -103,25 +94,7 @@ columns:
   resourceName: true    # Show the resource name
   changedParams: true   # Show parameters that have changed
   resourceType: true    # Show the resource type
-  resourceAddress: true # Show the Terraform resource address
-```
-
-You can selectively hide columns by setting them to `false` in your configuration file:
-
-```yaml
-# Only show the most essential information
-columns:
-  changeType: true
-  resourceName: true
-  changedParams: true
-  resourceType: false
-  resourceAddress: false
-```
-
-You can also specify a custom config file location:
-
-```bash
-tftldr -config path/to/your/config.yml
+  resourceAddress: false # Hide the resource address
 ```
 
 This allows you to:
@@ -129,22 +102,9 @@ This allows you to:
 - Customize which resource types to ignore based on your needs
 - Share configuration across multiple projects
 
-## Development 🧪
 
-To test locally while developing:
+## License 📝
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-```bash
-go run .
-```
-
-## Why tftldr? 🤔
-
-Because sometimes, you need to know what's changing in your infrastructure without needing to decipher the entire Library of Alexandria worth of JSON. Life's too short for manual diff-ing!
-
-## License 📜
-
-Free as in "free from having to read entire Terraform plans"!
-
-## Contributions 🤝
-
-PRs welcome! Especially if they make the output even more eye-catching or add support for interpretive dance visualizations of your infrastructure changes.
+## Disclaimer ⚠️
+This tool is designed to help you understand Terraform plans better, but it does not replace the need to review the plan in detail. Always read the Terraform plan output despite what a humours README might suggest.
