@@ -1,5 +1,5 @@
 # Ignore Terraform plan files
-tfplan.json
+*tfplan.json
 
 # Ignore the compilled binary
 tftldr

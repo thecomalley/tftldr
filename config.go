@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/viper"
 )
 
-// loadConfig initializes and loads configuration from a file
-func loadConfig(configPath string) {
+// loadConfig initializes and loads configuration automatically
+func loadConfig() {
 	// Reset viper to avoid any previous configuration
 	viper.Reset()
 
@@ -23,32 +22,16 @@ func loadConfig(configPath string) {
 	viper.SetDefault("columns.resourceType", true)
 	viper.SetDefault("columns.resourceAddress", true)
 
-	var configFile string
+	// Set up viper to look for configuration
+	viper.SetConfigName(".tftldr") // config file name without extension
+	viper.SetConfigType("yml")     // YAML format
+	viper.AddConfigPath(".")       // Look for config in the working directory
 
-	// If a specific config file was provided, use that
-	if configPath != "" {
-		configFile = configPath
-	} else {
-		// Otherwise, look for a .tftldr.yml file in the current directory
-		defaultConfigFile := ".tftldr.yml"
-		if _, err := os.Stat(defaultConfigFile); err == nil {
-			configFile = defaultConfigFile
-		}
-	}
-
-	// If we found a config file, load it
-	if configFile != "" {
-		viper.SetConfigFile(configFile)
-		if err := viper.ReadInConfig(); err != nil {
-			fmt.Printf("Warning: Error reading config file '%s': %v\n", configFile, err)
-		} else {
-			// After successful read, try to get the values
-			prefixes := viper.GetStringSlice("ignore.prefixes")
-			types := viper.GetStringSlice("ignore.types")
-
-			// Ensure values are set in viper
-			viper.Set("ignore.prefixes", prefixes)
-			viper.Set("ignore.types", types)
+	// Try to read configuration
+	if err := viper.ReadInConfig(); err != nil {
+		// It's okay if no config file is found - we'll use defaults
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			fmt.Printf("Warning: Error reading config file: %v\n", err)
 		}
 	}
 }

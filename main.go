@@ -17,12 +17,11 @@ import (
 func main() {
 	// Define command line flags
 	inputFile := flag.String("input", "tfplan.json", "Path to the Terraform plan JSON file")
-	configFile := flag.String("config", "", "Path to the configuration file (optional)")
 	csvOutput := flag.String("csv", "", "Path to export CSV (optional, for ITIL change tickets)")
 	flag.Parse()
 
 	// Load configuration
-	loadConfig(*configFile)
+	loadConfig()
 
 	// Load the Terraform plan JSON file
 	data, err := os.ReadFile(*inputFile)
