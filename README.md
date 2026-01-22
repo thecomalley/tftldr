@@ -25,9 +25,22 @@ Ok seriously though, there are a few terraform plan summary tools out there, but
 
 ## Installation 📦
 
+### Using Go Install
+
 ```bash
 go install github.com/thecomalley/tftldr@latest
 ```
+
+### Download Pre-built Binaries
+
+Download the latest release for your platform from the [Releases page](https://github.com/thecomalley/tftldr/releases).
+
+Available platforms:
+- Linux (amd64, arm64)
+- macOS (amd64, arm64)
+- Windows (amd64, arm64)
+
+Extract the archive and move the binary to a location in your PATH.
 
 ## Usage 🛠️
 
@@ -105,6 +118,36 @@ This allows you to:
 
 ## License 📝
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Release Process 🚀
+
+This project uses [GoReleaser](https://goreleaser.com/) to automate releases.
+
+### Creating a Release
+
+1. Ensure all changes are committed and pushed
+2. Create and push a new tag:
+   ```bash
+   git tag -a v1.0.0 -m "Release v1.0.0"
+   git push origin v1.0.0
+   ```
+3. GitHub Actions will automatically build and publish the release
+
+The release workflow will:
+- Build binaries for multiple platforms (Linux, macOS, Windows)
+- Create archives and checksums
+- Generate a changelog
+- Publish the release to GitHub
+
+### Testing Releases Locally
+
+To test the release process locally without publishing:
+
+```bash
+goreleaser release --snapshot --clean
+```
+
+This will create release artifacts in the `dist/` directory.
 
 ## Disclaimer ⚠️
 This tool is designed to help you understand Terraform plans better, but it does not replace the need to review the plan in detail. Always read the Terraform plan output despite what a humours README might suggest.
