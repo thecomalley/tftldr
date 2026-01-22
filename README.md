@@ -150,4 +150,4 @@ goreleaser release --snapshot --clean
 This will create release artifacts in the `dist/` directory.
 
 ## Disclaimer ⚠️
-This tool is designed to help you understand Terraform plans better, but it does not replace the need to review the plan in detail. Always read the Terraform plan output despite what a humours README might suggest.
+This tool is designed to help you understand Terraform plans better, but it does not replace the need to review the plan in detail. Always read the Terraform plan output despite what a humorous README might suggest.
