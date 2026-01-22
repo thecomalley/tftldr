@@ -3,3 +3,6 @@
 
 # Ignore the compilled binary
 tftldr
+
+# GoReleaser artifacts
+dist/
