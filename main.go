@@ -102,17 +102,38 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 				changedParams = []string{"All parameters"}
 			}
 
+			// Determine the resource type to display
+			resourceType := getDisplayResourceType(resource.Type, attributes)
+
 			changes = append(changes, ChangeRecord{
 				ChangeType:      action,
 				ResourceName:    resourceName,
 				ChangedParams:   strings.Join(changedParams, ", "),
-				ResourceType:    resource.Type,
+				ResourceType:    resourceType,
 				ResourceAddress: resource.Address,
 			})
 		}
 	}
 
 	return changes
+}
+
+// getDisplayResourceType returns the appropriate resource type for display.
+// For azapi_resource, it extracts the Azure resource type from the "type" attribute.
+func getDisplayResourceType(terraformType string, attributes map[string]interface{}) string {
+	// For azapi_resource, use the "type" attribute which contains the Azure resource type
+	// e.g., "Microsoft.ContainerRegistry/registries@2020-11-01-preview" -> "Microsoft.ContainerRegistry/registries"
+	if terraformType == "azapi_resource" || terraformType == "azapi_update_resource" {
+		if azureType, ok := attributes["type"]; ok && azureType != nil {
+			typeStr := fmt.Sprint(azureType)
+			// Strip the API version (everything after @)
+			if idx := strings.Index(typeStr, "@"); idx != -1 {
+				return typeStr[:idx]
+			}
+			return typeStr
+		}
+	}
+	return terraformType
 }
 
 // shouldIgnoreResource determines if a resource type should be excluded from the output
