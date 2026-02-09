@@ -92,7 +92,7 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 				attributes = resource.Change.After
 			}
 
-			resourceName = getResourceName(attributes)
+			resourceName = getResourceName(resource.Type, attributes)
 
 			// Only diff params for updates
 			if action == "update" {
@@ -120,8 +120,9 @@ func processChanges(resources []ResourceChange) []ChangeRecord {
 
 // getDisplayResourceType returns the appropriate resource type for display.
 // For azapi_resource, it extracts the Azure resource type from the "type" attribute.
+// For azapi_resource_action, it also includes the action (e.g., start, stop).
 func getDisplayResourceType(terraformType string, attributes map[string]interface{}) string {
-	// For azapi_resource, use the "type" attribute which contains the Azure resource type
+	// For azapi_resource and azapi_update_resource, use the "type" attribute which contains the Azure resource type
 	// e.g., "Microsoft.ContainerRegistry/registries@2020-11-01-preview" -> "Microsoft.ContainerRegistry/registries"
 	if terraformType == "azapi_resource" || terraformType == "azapi_update_resource" {
 		if azureType, ok := attributes["type"]; ok && azureType != nil {
@@ -133,6 +134,19 @@ func getDisplayResourceType(terraformType string, attributes map[string]interfac
 			return typeStr
 		}
 	}
+
+	// For azapi_resource_action, extract the Azure resource type (action is displayed in Name column)
+	if terraformType == "azapi_resource_action" {
+		if azureType, ok := attributes["type"]; ok && azureType != nil {
+			typeStr := fmt.Sprint(azureType)
+			// Strip the API version (everything after @)
+			if idx := strings.Index(typeStr, "@"); idx != -1 {
+				return typeStr[:idx]
+			}
+			return typeStr
+		}
+	}
+
 	return terraformType
 }
 
@@ -161,13 +175,28 @@ func shouldIgnoreResource(resourceType string) bool {
 	return false
 }
 
-func getResourceName(attributes map[string]interface{}) string {
-	// Try to get display_name, then name, then id, returning first one found
+func getResourceName(terraformType string, attributes map[string]interface{}) string {
+	// For azapi_resource_action, display as "Action: {action}" (e.g., "Action: Start")
+	if terraformType == "azapi_resource_action" {
+		if action, ok := attributes["action"]; ok && action != nil {
+			actionStr := fmt.Sprint(action)
+			// Capitalize the first letter of the action
+			if len(actionStr) > 0 {
+				actionStr = strings.ToUpper(actionStr[:1]) + actionStr[1:]
+			}
+			return fmt.Sprintf("Action: %s", actionStr)
+		}
+	}
+
+	// Try to get display_name, then name, then resource_id, then id
 	if displayName, ok := attributes["display_name"]; ok && displayName != nil {
 		return fmt.Sprint(displayName)
 	}
 	if name, ok := attributes["name"]; ok && name != nil {
 		return fmt.Sprint(name)
+	}
+	if resourceID, ok := attributes["resource_id"]; ok && resourceID != nil {
+		return fmt.Sprint(resourceID)
 	}
 	if id, ok := attributes["id"]; ok && id != nil {
 		return fmt.Sprint(id)

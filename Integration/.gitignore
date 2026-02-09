@@ -1,6 +1,9 @@
 # Local .terraform directories
 .terraform/
 
+# Environment files with secrets
+.env
+
 # .tfstate files
 *.tfstate
 *.tfstate.*

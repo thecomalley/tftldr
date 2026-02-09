@@ -10,7 +10,7 @@ provider "azapi" {
 }
 
 provider "azurerm" {
-  # export ARM_SUBSCRIPTION_ID="your-subscription-id"
+  # source .env && export ARM_SUBSCRIPTION_ID
   features {}
 }
 
@@ -61,4 +61,36 @@ output "login_server" {
 // it will output "disabled"
 output "quarantine_policy" {
   value = azapi_resource.example.output.properties.policies.quarantinePolicy.status
+}
+
+// Azure Spring Apps service for testing azapi_resource_action
+resource "azurerm_spring_cloud_service" "example" {
+  name                = "example-springcloud"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+}
+
+variable "enabled" {
+  type    = bool
+  default = true
+}
+
+// Start Azure Spring Apps
+resource "azapi_resource_action" "start" {
+  type                   = "Microsoft.AppPlatform/Spring@2022-05-01-preview"
+  resource_id            = azurerm_spring_cloud_service.example.id
+  action                 = "start"
+  response_export_values = ["*"]
+
+  count = var.enabled ? 1 : 0
+}
+
+// Stop Azure Spring Apps
+resource "azapi_resource_action" "stop" {
+  type                   = "Microsoft.AppPlatform/Spring@2022-05-01-preview"
+  resource_id            = azurerm_spring_cloud_service.example.id
+  action                 = "stop"
+  response_export_values = ["*"]
+
+  count = var.enabled ? 0 : 1
 }
